@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model History {
+  id     Int     @id @default(autoincrement())
+  userId Int
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[] @relation("HistoryProduct")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  login    String  @unique
+  password String
+  email    String
+  name     String
+  phone    String
+  inn      String  @unique
+  status   String
+  ogrn     String?
+  ogrnip   String?
+  role     String  @default("seller")
+
+  history History[]
+}
+
+model Order {
+  id           Int      @id @default(autoincrement())
+  orderName    String
+  clientName   String
+  createdAt    DateTime @default(now())
+  passport     String
+  phone        String
+  weight       Float
+  volume       Float
+  address      String
+  dateDelivery DateTime
+  dateReceipt  DateTime
+  dateTransfer DateTime
+  image        String?
+  status       String   @default("pending")
+  cost         Float
+  qrCodePath   String?
+
+  histories History[] @relation("HistoryProduct")
+}
