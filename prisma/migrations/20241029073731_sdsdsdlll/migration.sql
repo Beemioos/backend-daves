@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `User` MODIFY `name` VARCHAR(191) NULL,
+    MODIFY `status` VARCHAR(191) NULL,
+    ALTER COLUMN `role` DROP DEFAULT;

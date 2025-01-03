@@ -1,8 +1,6 @@
-const bcrypt = require('bcryptjs')
 const path = require('path')
 const fs = require('fs')
 const { prisma } = require('../prisma/prisma-client')
-const { userInfo } = require('os')
 const QRCode = require('qrcode')
 
 const OrderController = {
@@ -122,6 +120,7 @@ const OrderController = {
 			res.status(500).json({ error: 'Internal server error' })
 		}
 	},
+
 	// getOrderById: async (req, res) => {
 	// 	const userId = parseInt(req.params.id, 10)
 	// 	if (isNaN(userId)) {
@@ -176,7 +175,6 @@ const OrderController = {
 		}
 	},
 
-	// Обновление заказа и генерация QR-кода
 	updateOrderById: async (req, res) => {
 		const { id } = req.params
 		const { status } = req.body

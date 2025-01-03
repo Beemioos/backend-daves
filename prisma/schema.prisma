@@ -19,22 +19,44 @@ model User {
   login    String  @unique
   password String
   email    String
-  name     String
+  name     String?
   phone    String
-  inn      String  @unique
-  status   String
+  inn      String? @unique
+  status   String?
   ogrn     String?
   ogrnip   String?
-  role     String  @default("seller")
+  role     String
 
   history History[]
+  basket  Basket?   @relation("UserBasket")
+}
+
+model BasketOrder {
+  id        Int      @id @default(autoincrement())
+  basketId  Int
+  orderId   Int
+  quantity  Int      @default(1)
+
+  basket    Basket   @relation(fields: [basketId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  @@unique([basketId, orderId]) // Уникальная комбинация корзины и товара
+}
+
+model Basket {
+  id        Int           @id @default(autoincrement())
+  userId    Int           @unique
+  user      User          @relation(fields: [userId], references: [id], name: "UserBasket")
+  orders    BasketOrder[] // Изменяем связь
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model Order {
-  id           Int      @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   orderName    String
   clientName   String
-  createdAt    DateTime @default(now())
+  createdAt    DateTime      @default(now())
   passport     String
   phone        String
   weight       Float
@@ -44,9 +66,10 @@ model Order {
   dateReceipt  DateTime
   dateTransfer DateTime
   image        String?
-  status       String   @default("pending")
+  status       String        @default("pending")
   cost         Float
   qrCodePath   String?
 
   histories History[] @relation("HistoryProduct")
+  basketOrders BasketOrder[] 
 }

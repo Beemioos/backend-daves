@@ -8,11 +8,17 @@ const { prisma } = require('../prisma/prisma-client')
 const UserController = {
 	register: async (req, res) => {
 		const { email, password, name, login, phone, inn, status, ogrn } = req.body
+
+		console.log(email, password, name, login, phone, inn, status, ogrn)
+
+		let role = 'seller'
+		let nameL = name
 		let ogrnip = null
 		let ogrnNew = ogrn
 
 		if (!email || !password || !name || !login || !phone || !inn || !status) {
-			return res.json({ error: 'Все поля обязательны' })
+			role = 'user'
+			nameL = null
 		}
 
 		if (ogrnNew && ogrnNew.length === 13) {
@@ -68,12 +74,19 @@ const UserController = {
 					login,
 					password: hashedPassword,
 					email,
-					name,
+					name: nameL,
 					phone,
 					ogrn: ogrnNew,
 					ogrnip,
 					inn,
 					status,
+					role,
+				},
+			})
+
+			await prisma.basket.create({
+				data: {
+					userId: user.id,
 				},
 			})
 
@@ -122,9 +135,13 @@ const UserController = {
 			ogrnNew = null
 			ogrnip = null
 		}
-	
+
 		try {
-			if (ogrnNew && ogrnNew !== (await prisma.user.findUnique({ where: { id: userId } })).ogrn) {
+			if (
+				ogrnNew &&
+				ogrnNew !==
+					(await prisma.user.findUnique({ where: { id: userId } })).ogrn
+			) {
 				const existingOgrn = await prisma.user.findFirst({
 					where: { ogrn: ogrnNew },
 				})
@@ -132,35 +149,44 @@ const UserController = {
 					return res.status(400).json({ error: 'Введите действительный ОГРН' })
 				}
 			}
-	
-			if (ogrnip && ogrnip !== (await prisma.user.findUnique({ where: { id: userId } })).ogrnip) {
+
+			if (
+				ogrnip &&
+				ogrnip !==
+					(await prisma.user.findUnique({ where: { id: userId } })).ogrnip
+			) {
 				const existingOgrnip = await prisma.user.findFirst({
 					where: { ogrnip },
 				})
 				if (existingOgrnip) {
-					return res.status(400).json({ error: 'Введите действительный ОГРНИП' })
+					return res
+						.status(400)
+						.json({ error: 'Введите действительный ОГРНИП' })
 				}
 			}
-			if (inn && inn !== (await prisma.user.findUnique({ where: { id: userId } })).inn) {
+			if (
+				inn &&
+				inn !== (await prisma.user.findUnique({ where: { id: userId } })).inn
+			) {
 				const existingInn = await prisma.user.findUnique({
 					where: { inn },
 				})
-	
+
 				if (existingInn) {
 					return res.status(400).json({ error: 'Введите действительный ИНН' })
 				}
 			}
-	
+
 			if (login) {
 				const existingUser = await prisma.user.findFirst({
 					where: { login: login },
 				})
-	
+
 				if (existingUser && existingUser.id !== userId) {
 					return res.status(400).json({ error: 'Логин занят' })
 				}
 			}
-	
+
 			const updateData = {
 				email: email || undefined,
 				name: name || undefined,
@@ -169,22 +195,20 @@ const UserController = {
 				phone: phone || undefined,
 				status: status || undefined,
 				ogrn: ogrnNew || undefined,
-				ogrnip:  ogrnip || undefined,
+				ogrnip: ogrnip || undefined,
 				inn: inn || undefined,
 			}
-	
+
 			const user = await prisma.user.update({
 				where: { id: userId },
 				data: updateData,
 			})
 			res.json(user)
-	
 		} catch (error) {
 			console.log('error', error)
 			res.status(500).json({ error: 'Что-то пошло не так' })
 		}
 	},
-	
 
 	current: async (req, res) => {
 		try {

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const UserController = require('../controllers/userController')
 const OrderController = require('../controllers/orderController')
+const BasketController = require('../controllers/basketController')
 const { authenticateToken } = require('../middleware/auth')
 const multer = require('multer')
 const path = require('path')
@@ -38,11 +39,19 @@ router.post(
 	upload.single('image'),
 	OrderController.createOrder
 )
-router.get('/allorders', authenticateToken, OrderController.getAllOrder)
+router.get('/allorders', OrderController.getAllOrder)
 router.get('/orders', authenticateToken, OrderController.getOrderByUserId)
 
 router.put('/orders/:id', authenticateToken, OrderController.updateOrderById)
 // router.get('/orders/:id', authenticateToken, OrderController.getOrderById)
 router.get('/orders/:id', OrderController.getOrderByID)
+
+router.post('/basket/add', BasketController.addToBasket)
+router.delete('/basket/remove', BasketController.removeFromBasket)
+router.get('/basket/:userId', BasketController.getBasket);
+router.get('/basket/:userId', BasketController.getBasket);
+router.post('/basket/decreaseQuantity', BasketController.decreaseQuantity);
+
+
 
 module.exports = router
